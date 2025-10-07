@@ -22,10 +22,19 @@ class Product:
             self._price = float(price)
             self._quantity = int(quantity)
             self._activ = True
+            self._promotion = None
 
         except (ValueError, TypeError) as e:
             print(f"Initialisation error: {e} ")
             self._activ = False # deactivate product if somthing went wrong
+
+    def set_promotion(self, promotion): # add promotion object
+        self._promotion = promotion
+
+
+    def remove_promotion(self):
+        self._promotion = None
+
 
     def get_quantity(self) -> int:
         """ Getter function for quantity. Returns the quantity (int)"""
@@ -60,7 +69,7 @@ class Product:
 
     def show(self):
         """ prints a string that represents the product """
-        return self._name
+        return self._name,
 
 
     def buy(self, quantity) -> float:
@@ -72,16 +81,66 @@ class Product:
         """
         try:
             quantity = int(quantity)
+
             if quantity <= 0:
-                print("Quantity must be greater than zero")
+                raise ValueError("Quantity must be greater than zero")
             if not self._activ:
-                raise Exception("Product is not activ")
+                raise RuntimeError("Product is not activ")
             if quantity > self._quantity:
-                raise Exception(f"Not enough products are available.")
-            if quantity == 0:
-                self._activ = False # Products empty
+                raise ValueError(f"Not enough products are available.")
+
+            #reduce stock
             self._quantity -= quantity
+
+            # deactivate product
+            if quantity == 0:
+                self.deactivate()
+
             return self._price * quantity
-        except (ValueError, Exception) as e:
+
+        except (ValueError, RuntimeError) as e:
             print(f"Error: {e}")
             return 0
+
+
+class NonStockedProduct(Product):
+
+    def __init__(self, name: str, price: float):
+        super().__init__(name, price, quantity = 0)
+        self._quantity = 0
+        self._is_active = True
+
+    def get_quantity(self) -> str:
+        return "Unlimited"
+
+    def set_quantity(self, quantity):
+        raise AttributeError("This product has no quantity")
+
+    def buy(self, quantity=1) -> float:
+        if not self._is_active:
+            raise RuntimeError("Product is not active")
+        return self._price * quantity
+
+
+class LimitedProduct(Product):
+    def __init__(self, name: str, price: float, quantity: int, maximum: int):
+        super().__init__(name, price, quantity)
+        try:
+            if not isinstance(maximum, int):
+                raise TypeError("Maximum must be a number")
+            if maximum < 0:
+                raise ValueError("Maximum can't be negative")
+            self._maximum = maximum
+        except (ValueError, RuntimeError) as e:
+            print(f"Error: {e}")
+
+    def get_quantity(self):
+        return f"limited to {self._maximum}"
+
+    def get_maximum(self):
+        return self._maximum
+
+    def buy(self, quantity) -> float:
+        if quantity > self._maximum:
+            raise ValueError(f"Maximum oder is {self._maximum}")
+        return super().buy(quantity)

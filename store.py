@@ -37,7 +37,7 @@ class Store:
 
     def get_total_quantity(self) -> int:
         """ Returns how many products are in products list"""
-        return sum(product.get_quantity() for product in self._products)
+        return sum(product.get_quantity() for product in self._products if isinstance(product.get_quantity(), int))
 
 
     def get_all_products(self) -> list:

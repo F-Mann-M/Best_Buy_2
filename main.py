@@ -1,12 +1,18 @@
+from curses.ascii import isdigit
+
 import products
 import store
 
 # setup initial stock of inventory
+# setup initial stock of inventory
 product_list = [ products.Product("MacBook Air M2", price=1450, quantity=100),
                  products.Product("Bose QuietComfort Earbuds", price=250, quantity=500),
-                 products.Product("Google Pixel 7", price=500, quantity=250)
+                 products.Product("Google Pixel 7", price=500, quantity=250),
+                 products.NonStockedProduct("Windows License", price=125),
+                 products.LimitedProduct("Shipping", price=10, quantity=250, maximum=1)
                ]
 best_buy = store.Store(product_list)
+
 
 def list_all_products():
     """ prints a list of all products in store along with price and quantity"""
@@ -57,6 +63,10 @@ def make_an_order():
         if not users_order or not product_quantity:
             break
         try:
+            if not isdigit(users_order):
+                raise ValueError("Order have to be a number")
+            if not isdigit(product_quantity):
+                raise ValueError("Quantity have to be a number")
             users_order = int(users_order)
             product_quantity = int(product_quantity)
             if users_order not in product_table:
@@ -68,9 +78,8 @@ def make_an_order():
             shopping_list.append((product_table[users_order], product_quantity))
             total_price = best_buy.order(shopping_list)
             print(f"Order made! Total payment: {total_price}")
-        except ValueError:
-            print("Please enter numbers only")
-        except Exception as e:
+
+        except (ValueError, Exception) as e:
             print(f"Unfortunately somthing went wrong. Error: {e}")
     return
 
