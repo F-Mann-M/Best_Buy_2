@@ -36,6 +36,13 @@ class Product:
         self._promotion = None
 
 
+    def get_promotion(self):
+        if self._promotion:
+            return self._promotion.name
+        return None
+
+
+
     def get_quantity(self) -> int:
         """ Getter function for quantity. Returns the quantity (int)"""
         return self._quantity
@@ -69,7 +76,12 @@ class Product:
 
     def show(self):
         """ prints a string that represents the product """
-        return self._name,
+        parts = [f"{self._name}", f"Price: {self._price}", f"Quantity: {self.get_quantity()}"]
+
+        if self._promotion:
+            parts.append(f"Promotion: {self.get_promotion()}")
+
+        return ", ".join(parts)
 
 
     def buy(self, quantity) -> float:
@@ -95,6 +107,10 @@ class Product:
             # deactivate product
             if quantity == 0:
                 self.deactivate()
+
+            if self._promotion:
+                print(f"Promotion: {self._promotion.name}")
+                return self._promotion.apply_promotion(self, quantity)
 
             return self._price * quantity
 

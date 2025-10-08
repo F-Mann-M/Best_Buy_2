@@ -1,16 +1,26 @@
 from curses.ascii import isdigit
-
+import promotion
 import products
 import store
 
-# setup initial stock of inventory
-# setup initial stock of inventory
+# stock of inventory
 product_list = [ products.Product("MacBook Air M2", price=1450, quantity=100),
                  products.Product("Bose QuietComfort Earbuds", price=250, quantity=500),
                  products.Product("Google Pixel 7", price=500, quantity=250),
                  products.NonStockedProduct("Windows License", price=125),
                  products.LimitedProduct("Shipping", price=10, quantity=250, maximum=1)
                ]
+
+# Create promotion catalog
+second_half_price = promotion.SecondHalfPrice("Second Half price!")
+third_one_free = promotion.ThirdOneFree("Third One Free!")
+thirty_percent = promotion.PercentDiscount("30% off!",30)
+
+# Add promotions to products
+product_list[0].set_promotion(second_half_price)
+product_list[1].set_promotion(third_one_free)
+product_list[3].set_promotion(thirty_percent)
+
 best_buy = store.Store(product_list)
 
 
@@ -19,7 +29,7 @@ def list_all_products():
     print("\n\tList of Products\n\t________________")
     if best_buy.get_all_products():
         for index, product in enumerate(best_buy.get_all_products()):
-            print(f"{index + 1}.\t{product.show()}, Price: {product.get_price()}, Quantity: {product.get_quantity()}")
+            print(f"{index + 1}.\t{product.show()}")
     else:
         print("No products available")
 
@@ -49,10 +59,9 @@ def make_an_order():
     for index, product in enumerate(best_buy.get_all_products()):
         product_table[index + 1] = product
 
-
     # print menu
     for key, product in product_table.items():
-        print(f"{key}.\t{product.show()},Price: {product.get_price()},Quantity: {product.get_quantity()}")
+        print(f"{key}.\t{product.show()}")
     print("_" * 30)
     print("When you want to finish order, enter empty text.")
 
@@ -67,14 +76,17 @@ def make_an_order():
                 raise ValueError("Order have to be a number")
             if not isdigit(product_quantity):
                 raise ValueError("Quantity have to be a number")
+
             users_order = int(users_order)
             product_quantity = int(product_quantity)
+
             if users_order not in product_table:
                 print(f"Number {users_order} not in list.")
                 continue
             if product_quantity <= 0:
                 print(f"Quantity must be greater than zero.")
                 continue
+
             shopping_list.append((product_table[users_order], product_quantity))
             total_price = best_buy.order(shopping_list)
             print(f"Order made! Total payment: {total_price}")
